@@ -1,0 +1,43 @@
+name: myweight
+description: "تطبيق المستشار الذكي للتنبؤ بنجاح إنقاص الوزن"
+
+# المعلومات التالية تحدد إصدار التطبيق
+publish_to: 'none' 
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.2.2
+  fl_chart: ^0.66.0
+
+  # المكتبة الأساسية لإرسال البيانات لخادم البايثون
+  http: ^1.1.0
+
+  # مكتبة الأيقونات الافتراضية
+  cupertino_icons: ^1.0.6
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # إذا كنت تريد استخدام صور أو أيقونات خاصة، أضفها هنا
+  #assets:
+   # - assets/images/
+
+  # إعدادات الخط العربي (تأكد من وجود ملفات الخط في المجلد المذكور)
+  #fonts:
+    #- family: Cairo
+      #fonts:
+        #- asset: assets/fonts/Cairo-Regular.ttf
+       # - asset: assets/fonts/Cairo-Bold.ttf
+        #  weight: 700
