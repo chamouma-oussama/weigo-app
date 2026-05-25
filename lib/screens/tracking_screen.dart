@@ -4,6 +4,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'dart:convert';
 
 class TrackingScreen extends StatefulWidget {
+  const TrackingScreen({Key? key}) : super(key: key);
+
   @override
   _TrackingScreenState createState() => _TrackingScreenState();
 }
@@ -19,15 +21,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
     {"title": "Sleep: 8 hours of quality rest", "isDone": false},
   ];
 
-  List<double> _weeklyHistory = [
-    0.2,
-    0.5,
-    0.4,
-    0.7,
-    0.6,
-    0.8,
-    0.3
-  ]; // قيم افتراضية للسجل
+  List<double> _weeklyHistory = [0.2, 0.5, 0.4, 0.7, 0.6, 0.8, 0.0]; // آخر عنصر يمثل اليوم الحالي ليرتبط بالمنحنى
 
   @override
   void initState() {
@@ -35,13 +29,11 @@ class _TrackingScreenState extends State<TrackingScreen> {
     _loadDataAndCheckDate();
   }
 
-  // 2. منطق الوقت والتحقق من اليوم الجديد (Logic)
+  // 2. منطق الوقت والتحقق من اليوم الجديد
   Future<void> _loadDataAndCheckDate() async {
     final prefs = await SharedPreferences.getInstance();
-    String today =
-        DateTime.now().toString().split(' ')[0]; // تاريخ اليوم (YYYY-MM-DD)
+    String today = DateTime.now().toString().split(' ')[0]; // تاريخ اليوم (YYYY-MM-DD)
 
-    // تحميل البيانات المحفوظة
     String? savedTasks = prefs.getString('saved_tasks');
     String? lastDate = prefs.getString('last_date');
     String? savedHistory = prefs.getString('weekly_history');
@@ -53,9 +45,12 @@ class _TrackingScreenState extends State<TrackingScreen> {
       if (savedHistory != null) {
         _weeklyHistory = List<double>.from(jsonDecode(savedHistory));
       }
+      // تحديث آخر نقطة في المنحنى تلقائياً لتعكس التقدم الفعلي لليوم الحالي عند الفتح
+      if (_weeklyHistory.isNotEmpty) {
+        _weeklyHistory[_weeklyHistory.length - 1] = _calculateProgress;
+      }
     });
 
-    // إذا كان المستخدم يفتح التطبيق في يوم جديد
     if (lastDate != null && lastDate != today) {
       _archiveAndReset(today, prefs);
     } else if (lastDate == null) {
@@ -64,21 +59,19 @@ class _TrackingScreenState extends State<TrackingScreen> {
   }
 
   void _archiveAndReset(String today, SharedPreferences prefs) async {
-    double yesterdayProgress =
-        _calculateProgress; // حساب إنجاز الأمس قبل التصفير
+    double yesterdayProgress = _calculateProgress;
 
     setState(() {
-      // تحديث السجل الأسبوعي (إضافة إنجاز الأمس وحذف الأقدم)
       _weeklyHistory.removeAt(0);
       _weeklyHistory.add(yesterdayProgress);
 
-      // تصفير جميع المهام ليوم جديد
       for (var task in _dailyTasks) {
         task['isDone'] = false;
       }
+      // إعادة تصفير تقدم اليوم الجديد في المنحنى
+      _weeklyHistory[_weeklyHistory.length - 1] = 0.0;
     });
 
-    // حفظ التغييرات الجديدة
     await prefs.setString('last_date', today);
     await prefs.setString('weekly_history', jsonEncode(_weeklyHistory));
     _saveTasks();
@@ -96,40 +89,45 @@ class _TrackingScreenState extends State<TrackingScreen> {
     return doneCount / _dailyTasks.length;
   }
 
-  // 4. واجهة إضافة مهمة جديدة
-  void _showAddTaskDialog() {
+  // 4. واجهة إضافة مهمة جديدة (متوافقة مع الثيمين)
+  void _showAddTaskDialog(bool isDarkMode) {
     TextEditingController taskController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        title: const Text("New Tracked Task"),
+        title: Text("New Tracked Task", style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)),
         content: TextField(
           controller: taskController,
-          decoration: const InputDecoration(
+          style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+          decoration: InputDecoration(
             hintText: "Enter task name...",
-            border: OutlineInputBorder(),
+            hintStyle: TextStyle(color: isDarkMode ? Colors.grey.shade500 : Colors.grey),
+            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: isDarkMode ? Colors.blueGrey.shade700 : Colors.grey)),
+            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: isDarkMode ? Colors.blue.shade400 : Colors.blue)),
           ),
           autofocus: true,
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel")),
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel", style: TextStyle(color: isDarkMode ? Colors.grey.shade400 : Colors.grey)),
+          ),
           ElevatedButton(
             onPressed: () {
               if (taskController.text.isNotEmpty) {
                 setState(() {
-                  _dailyTasks
-                      .add({"title": taskController.text, "isDone": false});
+                  _dailyTasks.add({"title": taskController.text, "isDone": false});
+                  // تحديث المنحنى فوراً
+                  _weeklyHistory[_weeklyHistory.length - 1] = _calculateProgress;
                 });
                 _saveTasks();
                 Navigator.pop(context);
               }
             },
-            style:
-                ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade700),
-            child: const Text("Add", style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: isDarkMode ? Colors.blue.shade500 : Colors.blue.shade700),
+            child: const Text("Add", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -139,14 +137,16 @@ class _TrackingScreenState extends State<TrackingScreen> {
   // 5. بناء واجهة المستخدم (UI)
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     double progress = _calculateProgress;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.grey[50],
       appBar: AppBar(
-        title: const Text("Progress Tracking",
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text("Progress Tracking", style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
+        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.blue.shade700,
+        foregroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
@@ -155,60 +155,76 @@ class _TrackingScreenState extends State<TrackingScreen> {
             onPressed: () {
               setState(() {
                 for (var task in _dailyTasks) task['isDone'] = false;
+                _weeklyHistory[_weeklyHistory.length - 1] = 0.0; // تصفير المنحنى لليوم
               });
               _saveTasks();
             },
           )
         ],
       ),
-      body: SingleChildScrollView(
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildTodayProgressHeader(progress),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 25, 20, 10),
-              child: Text(
-                "Weekly Performance History",
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueGrey),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildTodayProgressHeader(progress, isDarkMode),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 25, 20, 10),
+                      child: Text(
+                        "Weekly Performance History",
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.blue.shade400 : Colors.blueGrey,
+                        ),
+                      ),
+                    ),
+                    _buildWeeklyChart(isDarkMode),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 25, 20, 10),
+                      child: Text(
+                        "Daily Routine Checklist (Swipe left to delete)",
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDarkMode ? Colors.grey.shade400 : Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    _buildTasksList(isDarkMode),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
-            _buildWeeklyChart(),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 25, 20, 10),
-              child: Text(
-                "Daily Routine Checklist (Swipe left to delete)",
-                style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500),
-              ),
-            ),
-            _buildTasksList(),
-            const SizedBox(height: 100),
+            // 💾 زر التأكيد العصري المثبت في الأسفل
+            _buildConfirmButton(isDarkMode),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddTaskDialog,
-        backgroundColor: Colors.blue.shade700,
-        child: const Icon(Icons.add, color: Colors.white),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 60.0), // رفع الزر قليلاً لكي لا يغطي عليه زر التأكيد
+        child: FloatingActionButton(
+          onPressed: () => _showAddTaskDialog(isDarkMode),
+          backgroundColor: isDarkMode ? Colors.blue.shade500 : Colors.blue.shade700,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }
 
-  Widget _buildTodayProgressHeader(double progress) {
+  Widget _buildTodayProgressHeader(double progress, bool isDarkMode) {
     return Container(
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor == Colors.blue
-            ? Theme.of(context).primaryColor
-            : Colors.blue.shade700,
+        color: isDarkMode ? const Color(0xFF1E293B) : Colors.blue.shade700,
         borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+          bottomLeft: Radius.circular(30),
+          bottomRight: Radius.circular(30),
+        ),
       ),
       child: Column(
         children: [
@@ -216,15 +232,9 @@ class _TrackingScreenState extends State<TrackingScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text("Today's Progress Rate",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500)),
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
               Text("${(progress * 100).toInt()}%",
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24)),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24)),
             ],
           ),
           const SizedBox(height: 15),
@@ -232,8 +242,8 @@ class _TrackingScreenState extends State<TrackingScreen> {
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: Colors.blue.shade900.withOpacity(0.3),
-              color: Colors.white,
+              backgroundColor: isDarkMode ? Colors.blueGrey.shade800 : Colors.blue.shade900.withOpacity(0.3),
+              color: isDarkMode ? Colors.blue.shade400 : Colors.white,
               minHeight: 12,
             ),
           ),
@@ -242,40 +252,49 @@ class _TrackingScreenState extends State<TrackingScreen> {
     );
   }
 
-  Widget _buildWeeklyChart() {
+  Widget _buildWeeklyChart(bool isDarkMode) {
     return Container(
       height: 220,
       margin: const EdgeInsets.symmetric(horizontal: 15),
       padding: const EdgeInsets.only(right: 25, left: 10, top: 20, bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(20),
+        border: isDarkMode ? Border.all(color: Colors.blueGrey.shade800, width: 1) : null,
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              spreadRadius: 2)
+            color: Colors.black.withOpacity(isDarkMode ? 0.2 : 0.03),
+            blurRadius: 10,
+            spreadRadius: 2,
+          )
         ],
       ),
       child: LineChart(
         LineChartData(
           gridData: FlGridData(
-              show: true, drawVerticalLine: false, horizontalInterval: 0.2),
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: 0.25,
+            getDrawingHorizontalLine: (value) => FlLine(
+              color: isDarkMode ? Colors.blueGrey.shade800 : Colors.grey.shade200,
+              strokeWidth: 1,
+            ),
+          ),
           minY: 0.0,
-          maxY: 1.0, // من الصفر إلى الإنجاز الكامل 100%
+          maxY: 1.0,
           titlesData: FlTitlesData(
-            rightTitles:
-                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            topTitles:
-                const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 35,
+                reservedSize: 38,
                 interval: 0.25,
                 getTitlesWidget: (value, meta) {
-                  return Text("${(value * 100).toInt()}%",
-                      style: const TextStyle(fontSize: 10, color: Colors.grey));
+                  return Text(
+                    "${(value * 100).toInt()}%",
+                    style: TextStyle(fontSize: 10, color: isDarkMode ? Colors.grey.shade400 : Colors.grey),
+                  );
                 },
               ),
             ),
@@ -283,24 +302,19 @@ class _TrackingScreenState extends State<TrackingScreen> {
               sideTitles: SideTitles(
                 showTitles: true,
                 getTitlesWidget: (value, meta) {
-                  const days = [
-                    'Mon',
-                    'Tue',
-                    'Wed',
-                    'Thu',
-                    'Fri',
-                    'Sat',
-                    'Sun'
-                  ];
+                  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                   int index = value.toInt();
                   if (index >= 0 && index < days.length) {
                     return Padding(
                       padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(days[index],
-                          style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w500)),
+                      child: Text(
+                        days[index],
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDarkMode ? Colors.grey.shade400 : Colors.grey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     );
                   }
                   return const Text("");
@@ -311,17 +325,24 @@ class _TrackingScreenState extends State<TrackingScreen> {
           borderData: FlBorderData(show: false),
           lineBarsData: [
             LineChartBarData(
-              spots: _weeklyHistory
-                  .asMap()
-                  .entries
-                  .map((e) => FlSpot(e.key.toDouble(), e.value))
-                  .toList(),
+              spots: _weeklyHistory.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value)).toList(),
               isCurved: true,
-              color: Colors.blue.shade700,
+              color: isDarkMode ? Colors.blue.shade400 : Colors.blue.shade700,
               barWidth: 4,
-              dotData: const FlDotData(show: true),
+              dotData: FlDotData(
+                show: true,
+                checkToShowDot: (spot, barData) => spot.x == 6, // تمييز نقطة اليوم الحالي فقط
+                getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+                  radius: 6,
+                  color: isDarkMode ? Colors.blue.shade400 : Colors.blue.shade700,
+                  strokeWidth: 2,
+                  strokeColor: Colors.white,
+                ),
+              ),
               belowBarData: BarAreaData(
-                  show: true, color: Colors.blue.shade700.withOpacity(0.12)),
+                show: true,
+                color: (isDarkMode ? Colors.blue.shade400 : Colors.blue.shade700).withOpacity(0.12),
+              ),
             ),
           ],
         ),
@@ -329,7 +350,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
     );
   }
 
-  Widget _buildTasksList() {
+  Widget _buildTasksList(bool isDarkMode) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -342,53 +363,110 @@ class _TrackingScreenState extends State<TrackingScreen> {
           background: Container(
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.only(right: 20),
-            decoration: BoxDecoration(
-                color: Colors.red.shade600,
-                borderRadius: BorderRadius.circular(15)),
+            margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+            decoration: BoxDecoration(color: Colors.red.shade600, borderRadius: BorderRadius.circular(15)),
             child: const Icon(Icons.delete, color: Colors.white),
           ),
           onDismissed: (direction) {
             setState(() {
               _dailyTasks.removeAt(index);
+              _weeklyHistory[_weeklyHistory.length - 1] = _calculateProgress; // تحديث المنحنى بعد الحذف
             });
             _saveTasks();
           },
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
             decoration: BoxDecoration(
+              // 🛠️ تم الإصلاح هنا: استبدال shade950 بالدرجة اللونية الكحلية الداكنة المخصصة والمستقرة
+              color: isDone
+                  ? (isDarkMode ? const Color(0xFF172554).withOpacity(0.4) : Colors.green.shade50.withOpacity(0.7))
+                  : (isDarkMode ? const Color(0xFF1E293B) : Colors.white),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
                 color: isDone
-                    ? Colors.blue.shade50.withOpacity(0.4)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.black.withOpacity(0.01),
-                      blurRadius: 5,
-                      spreadRadius: 1)
-                ]),
+                    ? (isDarkMode ? Colors.blue.shade800 : Colors.green.shade200)
+                    : (isDarkMode ? Colors.blueGrey.shade800 : Colors.grey.shade100),
+                width: 1,
+              ),
+            ),
             child: CheckboxListTile(
               title: Text(
                 _dailyTasks[index]['title'],
                 style: TextStyle(
                   fontSize: 14,
-                  fontWeight: isDone ? FontWeight.normal : FontWeight.w500,
-                  color: isDone ? Colors.grey : Colors.black87,
-                  decoration: isDone ? TextDecoration.lineThrough : null,
+                  fontWeight: isDone ? FontWeight.w400 : FontWeight.w500,
+                  color: isDone
+                      ? (isDarkMode ? Colors.grey.shade500 : Colors.grey.shade600)
+                      : (isDarkMode ? Colors.grey.shade200 : Colors.black87),
+                  decoration: TextDecoration.none, // الكتابة تظل نظيفة بدون خط مشطوب
                 ),
               ),
               value: isDone,
-              activeColor: Colors.blue.shade700,
+              activeColor: isDarkMode ? Colors.blue.shade400 : Colors.blue.shade700,
+              checkColor: Colors.white,
               onChanged: (val) {
                 setState(() {
                   _dailyTasks[index]['isDone'] = val;
+                  // تحديث المنحنى البياني فوراً عند الضغط ليتماشى مع المهام المنجزة أمام اللجنة
+                  _weeklyHistory[_weeklyHistory.length - 1] = _calculateProgress;
                 });
-                _saveTasks();
               },
               controlAffinity: ListTileControlAffinity.leading,
             ),
           ),
         );
       },
+    );
+  }
+
+  // 💾 ودجت زر التأكيد العصري المضاف في الأسفل
+  Widget _buildConfirmButton(bool isDarkMode) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF1E293B) : Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDarkMode ? 0.3 : 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: ElevatedButton.icon(
+        onPressed: () async {
+          await _saveTasks();
+          // حفظ إنجاز اليوم الحالي بشكل دائم في السجل الأسبوعي
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('weekly_history', jsonEncode(_weeklyHistory));
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Text("Weigo Progress Saved! (${(_calculateProgress * 100).toInt()}% Done)"),
+                ],
+              ),
+              backgroundColor: isDarkMode ? Colors.blue.shade600 : Colors.green.shade700,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        },
+        icon: const Icon(Icons.task_alt_rounded, size: 20, color: Colors.white),
+        label: const Text(
+          "Confirm & Save Progress",
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: 0.5, color: Colors.white),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isDarkMode ? Colors.blue.shade500 : Colors.blue.shade700,
+          minimumSize: const Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+        ),
+      ),
     );
   }
 }

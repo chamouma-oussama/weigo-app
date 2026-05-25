@@ -1,6 +1,7 @@
 // login_screen.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart'; // 💾 1. استيراد مكتبة الحفظ لإصلاح المشكلة
 import 'dart:convert';
 import 'selection_screen.dart'; 
 import 'signup_screen.dart'; 
@@ -32,8 +33,21 @@ class _LoginScreenState extends State<LoginScreen> {
         }),
       );
       final result = jsonDecode(response.body);
+      
       if (response.statusCode == 200 && result['status'] == 'success') {
+        // 💾 2. حفظ بيانات المستخدم في الذاكرة المحلية فور نجاح تسجيل الدخول قبل الانتقال
+        final prefs = await SharedPreferences.getInstance();
+        
+        // حفظ اسم المستخدم المدخل
+        await prefs.setString('username', _usernameController.text.trim());
+        
+        // جلب الإيميل إذا كان الـ API يعيده (مثلاً: result['email'])، وإذا لم يكن موجوداً يصنع له إيميل ذكي باسمه
+        String userEmail = result['email'] ?? "${_usernameController.text.trim().toLowerCase()}@weigo.com";
+        await prefs.setString('email', userEmail);
+
         _showSnackBar(result['message'] ?? "Login successful", isSuccess: true);
+        
+        // الانتقال الآمن للشاشة التالية
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SelectionScreen()));
       } else {
         _showSnackBar(result['message'] ?? "Incorrect username or password");
@@ -72,7 +86,6 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // الأيقونة الدائرية العلوية بألوانك الزرقاء
                   CircleAvatar(
                     radius: 35,
                     backgroundColor: Colors.blue.shade50,
@@ -80,10 +93,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 20),
                   Text("Welcome Back", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.blue.shade900)),
-                  Text("Sign in with your name or email", style: TextStyle(color: Colors.grey)),
+                  Text("Sign in with your username", style: TextStyle(color: Colors.grey)),
                   SizedBox(height: 25),
 
-                  // حقل اسم المستخدم
                   TextField(
                     controller: _usernameController,
                     decoration: InputDecoration(
@@ -94,7 +106,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 15),
 
-                  // حقل كلمة المرور
                   TextField(
                     controller: _passwordController,
                     obscureText: true,
@@ -106,7 +117,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 25),
 
-                  // زر تسجيل الدخول التفاعلي بالأزرق الساكن
                   _isLoading
                       ? CircularProgressIndicator()
                       : ElevatedButton(
@@ -121,7 +131,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                   SizedBox(height: 20),
 
-                  // رابط إنشاء الحساب
                   TextButton(
                     onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignupScreen())),
                     child: Text("Don't have an account? Sign up", style: TextStyle(color: Colors.blue.shade700, fontWeight: FontWeight.bold)),
