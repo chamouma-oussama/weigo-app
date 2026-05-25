@@ -59,7 +59,7 @@ class WelcomeScreen extends StatelessWidget {
 
             SizedBox(height: 15),
 
-            // 2. زر إنشاء حساب جديد (تمت إضافته بتصميم مفرغ متناسق)
+            // 2. زر إنشاء حساب جديد (تصميم مفرغ متناسق)
             OutlinedButton(
               onPressed: () {
                 Navigator.push(
@@ -79,36 +79,9 @@ class WelcomeScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-
-            SizedBox(height: 40),
-            Text("Or connect via",
-                style: TextStyle(color: Colors.white60, fontSize: 14)),
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _socialIcon(Icons.facebook, Colors.white),
-                SizedBox(width: 20),
-                _socialIcon(Icons.email_outlined, Colors.white),
-                SizedBox(width: 20),
-                _socialIcon(Icons.g_mobiledata_rounded, Colors.white),
-              ],
-            ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _socialIcon(IconData icon, Color color) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white24),
-        color: const Color.fromARGB(255, 244, 242, 242).withOpacity(0.1),
-      ),
-      child: Icon(icon, color: color, size: 30),
     );
   }
 }
