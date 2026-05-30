@@ -105,7 +105,7 @@ class _TrackingScreenState extends State<TrackingScreen> {
             hintText: "Enter task name...",
             hintStyle: TextStyle(color: isDarkMode ? Colors.grey.shade500 : Colors.grey),
             enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: isDarkMode ? Colors.blueGrey.shade700 : Colors.grey)),
-            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: isDarkMode ? Colors.blue.shade400 : Colors.blue)),
+            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: isDarkMode ? const Color.fromARGB(255, 66, 165, 245) : Colors.blue)),
           ),
           autofocus: true,
         ),

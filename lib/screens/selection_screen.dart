@@ -16,9 +16,11 @@ class AboutScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.grey[50],
       appBar: AppBar(
-        title: const Text("About Weigo", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text("About Weigo",
+            style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
-        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.blue.shade800,
+        backgroundColor:
+            isDarkMode ? const Color(0xFF1E293B) : Colors.blue.shade800,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -31,7 +33,8 @@ class AboutScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDarkMode ? const Color(0xFF1E293B) : Colors.blue.shade50,
+                color:
+                    isDarkMode ? const Color(0xFF1E293B) : Colors.blue.shade50,
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -61,29 +64,32 @@ class AboutScreen extends StatelessWidget {
               title: "Project Overview",
               icon: Icons.info_outline_rounded,
               isDarkMode: isDarkMode,
-              content: "Weigo is an advanced, data-driven mobile application designed as a university graduation thesis. The application aims to predict weight loss success rates by combining modern mobile development with Machine Learning capabilities.",
+              content:
+                  "Weigo is an advanced, data-driven mobile application designed as a university graduation thesis. The application aims to predict weight loss success rates by combining modern mobile development with Machine Learning capabilities.",
             ),
             _buildAboutCard(
               title: "Intelligence & Analytics",
               icon: Icons.analytics_outlined,
               isDarkMode: isDarkMode,
-              content: "By utilizing a trained Random Forest predictive model, Weigo processes key lifestyle factors, daily behavior metrics, and commitment data to deliver intelligent, actionable feedback to users on their health journeys.",
+              content:
+                  "By utilizing a trained Random Forest predictive model, Weigo processes key lifestyle factors, daily behavior metrics, and commitment data to deliver intelligent, actionable feedback to users on their health journeys.",
             ),
             _buildAboutCard(
               title: "Core Architecture",
               icon: Icons.code_rounded,
               isDarkMode: isDarkMode,
-              content: "• Frontend: Cross-platform development via Flutter & Dart\n"
-                       "• Backend: Python-based Flask API deployed securely on cloud\n"
-                       "• Machine Learning: Random Forest Classifier (Scikit-Learn)",
+              content:
+                  "• Frontend: Cross-platform development via Flutter & Dart\n"
+                  "• Backend: Python-based Flask API deployed securely on cloud\n"
+                  "• Machine Learning: Random Forest Classifier (Scikit-Learn)",
             ),
             _buildAboutCard(
               title: "Academic Credits",
               icon: Icons.school_outlined,
               isDarkMode: isDarkMode,
-              content: "• Supervised by: Mrs. Hamdani Nesrine\n"
-                       "• Developed by: Abdessalam Oussama Chamouma\n"
-                       "• Academic Year: 2025 - 2026",
+              content: "• Supervised by:Mrs. Hamdani Nesrine\n"
+                  "• Developed by: Abdessalam Oussama Chamouma/Mohamed Fellah\n"
+                  "• Academic Year: 2025 - 2026",
             ),
             const SizedBox(height: 20),
             Text(
@@ -125,14 +131,18 @@ class AboutScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: isDarkMode ? Colors.blue.shade400 : Colors.blue.shade700),
+              Icon(icon,
+                  size: 20,
+                  color:
+                      isDarkMode ? Colors.blue.shade400 : Colors.blue.shade700),
               const SizedBox(width: 10),
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.blue.shade400 : Colors.blue.shade800,
+                  color:
+                      isDarkMode ? Colors.blue.shade400 : Colors.blue.shade800,
                 ),
               ),
             ],
@@ -143,14 +153,16 @@ class AboutScreen extends StatelessWidget {
           ),
           Text(
             content,
-            style: TextStyle(fontSize: 13, height: 1.5, color: isDarkMode ? Colors.grey.shade300 : Colors.black87),
+            style: TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                color: isDarkMode ? Colors.grey.shade300 : Colors.black87),
           ),
         ],
       ),
     );
   }
 }
-
 
 // --- 🌟 شاشة الاختيار الرئيسية المحدثة (StatefulWidget لديناميكية البيانات) ---
 class SelectionScreen extends StatefulWidget {
@@ -176,7 +188,7 @@ class _SelectionScreenState extends State<SelectionScreen> {
       // 🛠️ تأكد من استخدام نفس الـ keys التي قمت بحفظ الاسم والإيميل بها عند التسجيل (مثلاً 'username' و 'email')
       _userName = prefs.getString('username') ?? "Guest User";
       _userEmail = prefs.getString('email') ?? "no-email@weigo.com";
-      
+
       // استخراج أول حرفين من الاسم بشكل ذكي لتكون كرمز شخصي
       if (_userName.isNotEmpty && _userName != "Guest User") {
         List<String> words = _userName.trim().split(' ');
@@ -198,8 +210,10 @@ class _SelectionScreenState extends State<SelectionScreen> {
     return Scaffold(
       backgroundColor: isDarkMode ? const Color(0xFF0F172A) : Colors.grey[50],
       appBar: AppBar(
-        title: const Text("Choose Your Path", style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: isDarkMode ? const Color(0xFF1E293B) : Colors.blue.shade800,
+        title: const Text("Choose Your Path",
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor:
+            isDarkMode ? const Color(0xFF1E293B) : Colors.blue.shade800,
         foregroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
@@ -212,7 +226,8 @@ class _SelectionScreenState extends State<SelectionScreen> {
           children: [
             UserAccountsDrawerHeader(
               currentAccountPicture: CircleAvatar(
-                backgroundColor: isDarkMode ? Colors.blue.shade700 : Colors.white,
+                backgroundColor:
+                    isDarkMode ? Colors.blue.shade700 : Colors.white,
                 child: Text(
                   _userInitials, // 🔥 يعرض الحروف الأولى من اسم المستخدم الحالي ديناميكياً
                   style: TextStyle(
@@ -224,14 +239,18 @@ class _SelectionScreenState extends State<SelectionScreen> {
               ),
               accountName: Text(
                 _userName, // 🔥 يعرض اسم المستخدم المسجل حالياً ديناميكياً
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 0.5),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    letterSpacing: 0.5),
               ),
               accountEmail: Text(
                 _userEmail, // 🔥 يعرض بريد المستخدم المسجل حالياً ديناميكياً
                 style: const TextStyle(fontSize: 13, color: Colors.white70),
               ),
               decoration: BoxDecoration(
-                color: isDarkMode ? const Color(0xFF1E293B) : Colors.blue.shade800,
+                color:
+                    isDarkMode ? const Color(0xFF1E293B) : Colors.blue.shade800,
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20),
@@ -246,32 +265,53 @@ class _SelectionScreenState extends State<SelectionScreen> {
                 children: [
                   _buildSectionTitle("Navigation", isDarkMode),
                   ListTile(
-                    leading: Icon(Icons.psychology_outlined, color: isDarkMode ? Colors.blue.shade400 : Colors.blue.shade800),
-                    title: const Text("Prediction Path", style: TextStyle(fontWeight: FontWeight.w500)),
+                    leading: Icon(Icons.psychology_outlined,
+                        color: isDarkMode
+                            ? Colors.blue.shade400
+                            : Colors.blue.shade800),
+                    title: const Text("Prediction Path",
+                        style: TextStyle(fontWeight: FontWeight.w500)),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => InputScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => InputScreen()));
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.fact_check_outlined, color: isDarkMode ? Colors.green.shade400 : Colors.green.shade700),
-                    title: const Text("Tracking Path", style: TextStyle(fontWeight: FontWeight.w500)),
+                    leading: Icon(Icons.fact_check_outlined,
+                        color: isDarkMode
+                            ? Colors.green.shade400
+                            : Colors.green.shade700),
+                    title: const Text("Tracking Path",
+                        style: TextStyle(fontWeight: FontWeight.w500)),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => TrackingScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => TrackingScreen()));
                     },
                   ),
-                  
+
                   const Divider(),
                   _buildSectionTitle("Project Info", isDarkMode),
-                  
+
                   // 🎯 شاشة About Weigo محفوظة ومتاحة فقط هنا في الـ Drawer
                   ListTile(
-                    leading: Icon(Icons.info_outline_rounded, color: isDarkMode ? Colors.purple.shade400 : Colors.purple.shade700),
-                    title: const Text("About Weigo (À Propos)", style: TextStyle(fontWeight: FontWeight.w500)),
+                    leading: Icon(Icons.info_outline_rounded,
+                        color: isDarkMode
+                            ? Colors.purple.shade400
+                            : Colors.purple.shade700),
+                    title: const Text("About Weigo (À Propos)",
+                        style: TextStyle(fontWeight: FontWeight.w500)),
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutScreen()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AboutScreen()));
                     },
                   ),
 
@@ -280,14 +320,19 @@ class _SelectionScreenState extends State<SelectionScreen> {
 
                   // زر التبديل للوضع الليلي
                   SwitchListTile(
-                    title: const Text("Dark Mode", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
+                    title: const Text("Dark Mode",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w500, fontSize: 14)),
                     secondary: Icon(
-                      isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                      isDarkMode
+                          ? Icons.dark_mode_rounded
+                          : Icons.light_mode_rounded,
                       color: isDarkMode ? Colors.amber : Colors.blueGrey,
                     ),
                     value: isDarkMode,
                     onChanged: (bool value) {
-                      themeNotifier.value = value ? ThemeMode.dark : ThemeMode.light;
+                      themeNotifier.value =
+                          value ? ThemeMode.dark : ThemeMode.light;
                     },
                   ),
                 ],
@@ -300,7 +345,9 @@ class _SelectionScreenState extends State<SelectionScreen> {
               padding: const EdgeInsets.all(16.0),
               child: ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text("Logout", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                title: const Text("Logout",
+                    style: TextStyle(
+                        color: Colors.red, fontWeight: FontWeight.bold)),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.pushAndRemoveUntil(
@@ -329,12 +376,11 @@ class _SelectionScreenState extends State<SelectionScreen> {
               icon: Icons.psychology_outlined,
               color: isDarkMode ? Colors.blue.shade400 : Colors.blue.shade800,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => InputScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => InputScreen()));
               },
             ),
-
             const SizedBox(height: 25),
-
             _buildOptionCard(
               context,
               title: "Tracking Path",
@@ -342,7 +388,8 @@ class _SelectionScreenState extends State<SelectionScreen> {
               icon: Icons.fact_check_outlined,
               color: isDarkMode ? Colors.green.shade400 : Colors.green.shade700,
               onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => TrackingScreen()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => TrackingScreen()));
               },
             ),
           ],
@@ -417,7 +464,9 @@ class _SelectionScreenState extends State<SelectionScreen> {
                     desc,
                     style: TextStyle(
                         fontSize: 13,
-                        color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600),
+                        color: isDarkMode
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade600),
                   ),
                 ],
               ),
