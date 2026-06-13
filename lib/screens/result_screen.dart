@@ -81,25 +81,7 @@ class ResultScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     
                     // 🌟 هنا يتم عرض دقة النموذج (Model Accuracy) المطلوبة للمناقشة
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.analytics_outlined,
-                          size: 20,
-                          color: isDarkMode ? Colors.blue.shade400 : Colors.blue.shade700,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          "Model Accuracy (AI): ${modelAccuracy.toStringAsFixed(1)}%",
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: isDarkMode ? Colors.blue.shade200 : Colors.blue.shade900,
-                          ),
-                        ),
-                      ],
-                    ),
+                    
                     const SizedBox(height: 15),
                     Text(
                       message,

@@ -80,7 +80,7 @@ class AboutScreen extends StatelessWidget {
               isDarkMode: isDarkMode,
               content:
                   "• Frontend: Cross-platform development via Flutter & Dart\n"
-                  "• Backend: Python-based Flask API deployed securely on cloud\n"
+                  "• Backend: Python-based FastAPI deployed securely on cloud\n"
                   "• Machine Learning: Random Forest Classifier (Scikit-Learn)",
             ),
             _buildAboutCard(

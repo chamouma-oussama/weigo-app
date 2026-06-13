@@ -31,7 +31,7 @@ class _InputScreenState extends State<InputScreen> {
   double _stressLevel = 3.0;
   double _motivation = 4.0;
   int _nightEating = 0;
-  bool _isCommitted = true;
+  double _isCommitted = 5.0;
 
   bool _isLoading = false;
 
@@ -68,7 +68,7 @@ class _InputScreenState extends State<InputScreen> {
           "water_intake": _waterIntake,
           "night_eating": _nightEating,
           "stress_level": _stressLevel.toInt(),
-          "commitment": _isCommitted ? 5 : 2,
+          "commitment": _isCommitted.toInt(),
           "motivation": _motivation.toInt(),
         }),
       );
@@ -394,6 +394,7 @@ class _InputScreenState extends State<InputScreen> {
                           "Total volume of pure fluid intake consumed within 24 hours.",
                           isDarkMode,
                           primaryBlue,
+                          (val) => setState(() => _waterIntake = val),
                           isWater: true),
                       const SizedBox(height: 24),
                       _buildSlider(
@@ -403,7 +404,8 @@ class _InputScreenState extends State<InputScreen> {
                           12,
                           "Average systemic overnight rest cycle experienced daily.",
                           isDarkMode,
-                          primaryBlue),
+                          primaryBlue,
+                          (val) => setState(() => _sleepHours = val)),
                       const SizedBox(height: 24),
                       _buildSwitch(
                           "Do you eat late at night?",
@@ -427,7 +429,8 @@ class _InputScreenState extends State<InputScreen> {
                           5,
                           "Overall daily movement: 1 for sedentary, 5 for heavy manual setups.",
                           isDarkMode,
-                          primaryBlue),
+                          primaryBlue,
+                          (val) => setState(() => _activityLevel = val)),
                       const SizedBox(height: 24),
                       _buildSlider(
                           "Sports Days/Week",
@@ -436,34 +439,38 @@ class _InputScreenState extends State<InputScreen> {
                           7,
                           "Weekly frequency allocated for deliberate athletic routines.",
                           isDarkMode,
-                          primaryBlue),
+                          primaryBlue,
+                          (val) => setState(() => _sportsDays = val)),
                       const SizedBox(height: 24),
                       _buildSlider(
                           "Stress Level",
                           _stressLevel,
                           1,
-                          5,
+                          10,
                           "Psychological pressure metric: 1 for tranquil, 5 for extreme tension.",
                           isDarkMode,
-                          primaryBlue),
+                          primaryBlue,
+                          (val) => setState(() => _stressLevel = val)),
                       const SizedBox(height: 24),
                       _buildSlider(
                           "Level of Motivation",
                           _motivation,
                           1,
-                          5,
+                          10,
                           "Inner behavioral determination score regarding consistency.",
                           isDarkMode,
-                          primaryBlue),
+                          primaryBlue,
+                          (val) => setState(() => _motivation = val)),
                       const SizedBox(height: 24),
-                      _buildSwitch(
+                      _buildSlider(
                           "Are you fully committed?",
                           _isCommitted,
+                          1,
+                          10,
                           "Are you genuinely prepared to maintain self-discipline?",
                           isDarkMode,
-                          primaryBlue, (val) {
-                        setState(() => _isCommitted = val);
-                      }),
+                          primaryBlue,
+                          (val) => setState(() => _isCommitted = val)),
                     ]),
                   ],
                 ),
@@ -731,7 +738,7 @@ class _InputScreenState extends State<InputScreen> {
   }
 
   Widget _buildSlider(String label, double value, double min, double max,
-      String helpText, bool isDarkMode, Color primaryColor,
+      String helpText, bool isDarkMode, Color primaryColor, ValueChanged<double> onChanged,
       {bool isWater = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -775,64 +782,50 @@ class _InputScreenState extends State<InputScreen> {
           data: SliderThemeData(
             trackHeight: 4,
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
             activeTrackColor: isDarkMode ? Colors.blue.shade400 : primaryColor,
-            inactiveTrackColor:
-                isDarkMode ? Colors.blueGrey.shade800 : const Color(0xFFE2E8F0),
+            inactiveTrackColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200,
             thumbColor: isDarkMode ? Colors.blue.shade400 : primaryColor,
           ),
           child: Slider(
             value: value,
             min: min,
             max: max,
-            divisions: isWater ? (max * 2).toInt() : (max - min).toInt(),
-            onChanged: (val) {
-              setState(() {
-                if (label.contains("Activity"))
-                  _activityLevel = val;
-                else if (label.contains("Sleep"))
-                  _sleepHours = val;
-                else if (label.contains("Water"))
-                  _waterIntake = val;
-                else if (label.contains("Sports"))
-                  _sportsDays = val;
-                else if (label.contains("Stress"))
-                  _stressLevel = val;
-                else if (label.contains("Motivation")) _motivation = val;
-              });
-            },
+            divisions: (max - min).toInt() == 0 ? 1 : (max - min).toInt(),
+            onChanged: onChanged,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSwitch(String title, bool val, String helpText, bool isDarkMode,
-      Color primaryColor, Function(bool) onChanged) {
-    return Container(
-      decoration: BoxDecoration(
-          color: isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFF8F9FA),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200,
-              width: 1.5)),
-      child: SwitchListTile(
-        title: Row(
-          children: [
-            Expanded(
-                child: Text(title,
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: isDarkMode ? Colors.white : primaryColor))),
-            _buildHelpIcon(helpText),
-          ],
+  Widget _buildSwitch(String label, bool value, String helpText,
+      bool isDarkMode, Color primaryColor, ValueChanged<bool> onChanged) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(label,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white : primaryColor)),
+                  const SizedBox(width: 6),
+                  _buildHelpIcon(helpText),
+                ],
+              ),
+            ],
+          ),
         ),
-        value: val,
-        onChanged: onChanged,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-        activeColor: isDarkMode ? Colors.blue.shade400 : primaryColor,
-      ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: isDarkMode ? Colors.blue.shade400 : primaryColor,
+        ),
+      ],
     );
   }
 }
